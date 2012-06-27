@@ -1,14 +1,14 @@
-Puppet::Type.type(:dism).provide(:dism) do
-  @doc = "Manages Windows features for Windows 2008R2 and Windows 7"
+Puppet::Type.type(:appcmd).provide(:appcmd) do
+  @doc = "Manages Windows IIS features for Windows 2008R2 and Windows 7"
 
   confine    :operatingsystem => :windows
   defaultfor :operatingsystem => :windows
 
   if Puppet.features.microsoft_windows?
     if ENV.has_key?('ProgramFiles(x86)')
-      commands :dism => "#{Dir::WINDOWS}\\sysnative\\Dism.exe"
+      commands :appcmd => "#{Dir::WINDOWS}\\sysnative\\inetsrv\\appcmd.exe"
     else
-      commands :dism => "#{Dir::WINDOWS}\\system32\\Dism.exe"
+      commands :appcmd => "#{Dir::WINDOWS}\\system32\\inetsrv\\appcmd.exe"
     end
   end
 
@@ -21,8 +21,8 @@ Puppet::Type.type(:dism).provide(:dism) do
   end
 
   def self.instances
-    features = dism '/online', '/Get-Features'
-    features = features.scan(/^Feature Name : ([\w-]+)\nState : (\w+)/)
+    sites = appcmd 'get', 'sites'
+    sites = sites.scan(/^Feature Name : ([\w-]+)\nState : (\w+)/)
     features.collect do |f|
       new(:name => f[0], :state => f[1])
     end
